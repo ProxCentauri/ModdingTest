@@ -21,6 +21,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.LinkedList;
 import java.util.List;
 
+@Deprecated
 public class ItemDebuggerManual extends Item {
 
 	public ItemDebuggerManual() {
@@ -180,7 +181,7 @@ public class ItemDebuggerManual extends Item {
 
                 if(tile instanceof IDebuggable) {
                     List<String> info = new LinkedList<String>();
-                    ((IDebuggable)tile).getDebugInfo(info);
+                    //((IDebuggable)tile).getDebugInfo(info);
                     if(info.size() > 0) {
                         for(String text : info)
                             Log.chatMessage(p, text);
