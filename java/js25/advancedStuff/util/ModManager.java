@@ -8,7 +8,7 @@ public class ModManager {
         IC2("IC2"),
         NEI("NotEnoughItems"),
         TE(null),
-        BC(null);
+        BC("BuildCraft|Core");
 
         private String id;
 
