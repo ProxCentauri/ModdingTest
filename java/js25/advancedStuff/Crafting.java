@@ -3,6 +3,7 @@ package js25.advancedStuff;
 import cpw.mods.fml.common.registry.GameRegistry;
 import js25.advancedStuff.util.CraftingHelper;
 import js25.advancedStuff.util.ModManager;
+import js25.advancedStuff.util.RefManager;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -22,11 +23,12 @@ public class Crafting {
         }
 
         {
-        Object c = ModManager.mods.IC2.isLoaded() && Config.useIC2Recipes ? null /*ic2.api.item.Items.getItem("advancedCircuit")*/ : new ItemStack(Blocks.redstone_block);
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModRegistry.Blocks.BUILDER.instance),
-            "aba", "aca", "aaa",
-            'a', recommendedIron, 'b', new ItemStack(Blocks.heavy_weighted_pressure_plate), 'c', c
-        )); }
+            Object c = ModManager.mods.IC2.isLoaded() && Config.useIC2Recipes ? RefManager.callMethod(RefManager.getMethod("ic2.api.item.IC2Items", "getItem", String.class), "advancedCircuit") : new ItemStack(Blocks.redstone_block);
+            GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModRegistry.Blocks.BUILDER.instance),
+                "aba", "aca", "aaa",
+                'a', recommendedIron, 'b', new ItemStack(Blocks.heavy_weighted_pressure_plate), 'c', c
+            ));
+        }
 
 
     }
