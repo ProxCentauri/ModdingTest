@@ -7,8 +7,10 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import js25.advancedStuff.gui.GuiHandler;
 import js25.advancedStuff.lib.ModInfo;
+import js25.advancedStuff.network.NetworkHandler;
 import js25.advancedStuff.proxies.CommonProxy;
 import js25.advancedStuff.util.Log;
 import js25.advancedStuff.util.ModCreativeTab;
@@ -37,7 +39,9 @@ public class AdvancedStuff {
         }
         
         @EventHandler
-        public void load(FMLInitializationEvent event) {
+        public void init(FMLInitializationEvent event) {
+
+            NetworkHandler.channels = NetworkRegistry.INSTANCE.newChannel(ModInfo.CHANNEL, new NetworkHandler());
 
             //ModBlocks.registerBlockNames();
             //ModItems.registerNames();
