@@ -1,0 +1,11 @@
+[
+{
+  "modid": "AdvancedStuff",
+  "name": "Advanced Stuff",
+  "version": "0.1.1_dev",
+  "mcversion": "1.7.2",
+  "authors": [ "JS25" ],
+  "description": "Doing nothing right now, features to be implemented",
+  "dependencies": []
+}
+]

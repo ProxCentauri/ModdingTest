@@ -1,0 +1,20 @@
+# Master language file
+
+#blocks
+tile.magnet.name=Magnet
+tile.builder.name=Wired Builder
+
+#items
+item.debugger.name=Debugger
+item.debugger.mode.info=Info
+item.debugger.mode.block=Set Block
+item.debugger.mode.meta=Set Meta
+item.debugger.mode.inject=Inject
+
+#gui
+gui.debugger.mode.scale=3.0
+
+#unused
+itemGroup.mainTab=Advanced Stuff
+
+
