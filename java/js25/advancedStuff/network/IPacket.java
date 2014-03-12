@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 
 public interface IPacket {
 
-    public void readBytes(ByteBuf bytes);
-    public void writeBytes(ByteBuf bytes);
+    public void readData(ByteBuf data);
+    public void writeData(ByteBuf data);
 
 }

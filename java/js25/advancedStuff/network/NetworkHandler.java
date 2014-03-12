@@ -13,17 +13,16 @@ public class NetworkHandler extends FMLIndexedMessageToMessageCodec<IPacket> {
     public static EnumMap<Side, FMLEmbeddedChannel> channels;
 
     public NetworkHandler() {
-
-        addDiscriminator(0, PacketItemStackUpdate.class);
+        //addDiscriminator(0, PacketItemStackUpdate.class);
     }
 
     @Override
     public void encodeInto(ChannelHandlerContext ctx, IPacket packet, ByteBuf data) throws Exception {
-        packet.writeBytes(data);
+        packet.writeData(data);
     }
 
     @Override
     public void decodeInto(ChannelHandlerContext ctx, ByteBuf data, IPacket packet) {
-        packet.readBytes(data);
+        packet.readData(data);
     }
 }
