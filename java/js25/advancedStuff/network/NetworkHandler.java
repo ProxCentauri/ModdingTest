@@ -13,7 +13,7 @@ public class NetworkHandler extends FMLIndexedMessageToMessageCodec<IPacket> {
     public static EnumMap<Side, FMLEmbeddedChannel> channels;
 
     public NetworkHandler() {
-        //addDiscriminator(0, PacketItemStackUpdate.class);
+        addDiscriminator(0, PacketContainerUpdate.class);
     }
 
     @Override

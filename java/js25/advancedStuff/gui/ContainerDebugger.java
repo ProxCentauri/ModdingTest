@@ -18,7 +18,13 @@ public class ContainerDebugger extends Container {
     }
 
     @Override
+    public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
+        return null;
+    }
+
+    @Override
     public boolean canInteractWith(EntityPlayer p) {
         return true;
     }
+
 }

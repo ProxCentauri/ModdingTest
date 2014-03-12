@@ -20,7 +20,7 @@ public class GuiHandler implements IGuiHandler {
         NetworkRegistry.INSTANCE.registerGuiHandler(AdvancedStuff.instance, this);
     }
 
-    private enum Types {
+    public enum Types {
         BOUND, PORTABLE;
     }
 
@@ -28,9 +28,9 @@ public class GuiHandler implements IGuiHandler {
         DEBUGGER(0, Types.PORTABLE, GuiDebugger.class, ContainerDebugger.class);
 
         public int id;
-        private Types type;
+        public Types type;
         private Class<? extends GuiContainer> guiClass;
-        private Class<? extends Container> containerClass;
+        public Class<? extends Container> containerClass;
 
         private GUIs(int id, Types type, Class<? extends GuiContainer> guiClass, Class<? extends Container> containerClass) {
             this.id = id;
