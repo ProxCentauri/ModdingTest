@@ -1,5 +1,6 @@
 package js25.advancedStuff.blocks;
 
+import js25.advancedStuff.items.ItemDebugger;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.tileentity.TileEntity;
@@ -7,7 +8,7 @@ import net.minecraft.util.AxisAlignedBB;
 
 import java.util.List;
 
-public class TileEntityMagnet extends TileEntity {
+public class TileEntityMagnet extends TileEntity implements IDebuggable {
 
     public int timer;
 
@@ -55,5 +56,16 @@ public class TileEntityMagnet extends TileEntity {
         }
 
 
+    }
+
+    @Override
+    public Object performDebug(ItemDebugger.DebugModes debugMode, Object in) {
+        return null;
+    }
+
+    @Override
+    public boolean isValid(ItemDebugger.DebugModes debugMode) {
+       if(debugMode == ItemDebugger.DebugModes.INFO) return true;
+       return false;
     }
 }
