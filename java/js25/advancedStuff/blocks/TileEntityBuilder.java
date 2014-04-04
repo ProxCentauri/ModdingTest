@@ -16,7 +16,9 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     //const
     private static final int UNITS_PER_TICK = 1;
     private static final int TICKS_NEW_SYNC = 5;
-    private static final MultiBlockStructure multiBlock = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
+    private static final MultiBlockStructure BASIC_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 3, 3, 3, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
+    private static final MultiBlockStructure BOILER_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 4, 3, 3, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}});
+    private static final MultiBlockStructure FURNACE_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 2, 3, 2, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.netherrack, Blocks.iron_block}, new Block[] {Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block}});
     //pers
     public int powerUnitsStored;
     //temp
@@ -84,7 +86,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
         } else if(debugMode == ItemDebugger.DebugModes.INJECT) {
             List data = (LinkedList<String>)in;
 
-            data.add(multiBlock.isValidStructure(worldObj, xCoord, yCoord, zCoord) ? "True" : "False");
+            data.add(BOILER_MULTI_BLOCK.isValidStructure(worldObj, xCoord, yCoord, zCoord) ? "True" : "False");
 
             return data;
         }
