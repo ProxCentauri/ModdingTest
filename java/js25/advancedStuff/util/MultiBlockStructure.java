@@ -6,18 +6,38 @@ import net.minecraft.world.World;
 public class MultiBlockStructure {
 
     private Block mainBlock;
-    int[] mainBlockPos;
+    int height, width, depth, mainLayerPos, mainBlockPos;
     private Block[][] blocks;
     private int[][] meta;
 
-    public MultiBlockStructure(Block mainBlock, Block[][] blocks) {
+    /**
+     * @param blocks The blocks required for a valid structure. Format: Block[Layer][Blocks]; <code>null</code> ignores placed blocks
+     */
+    public MultiBlockStructure(Block mainBlock, int height, int width, int depth, Block[][] blocks) {
         this.mainBlock = mainBlock;
+        this.height = height;
+        this.width = width;
+        this.depth = depth;
         this.blocks = blocks;
+
         for(int i = 0; i < this.blocks.length; i++) {
             if(this.blocks[i] == null) continue;
             for(int j = 0; j < this.blocks[i].length; j++)
-                if(this.blocks[i][j] == this.mainBlock) mainBlockPos = new int[] {i, j};
+                if(this.blocks[i][j] == this.mainBlock) {
+                    mainLayerPos = i;
+                    mainBlockPos = j;
+                }
         }
+
+        int maxLayers = 0;
+        int maxBlocks = 0;
+        for(int i = 0; i < this.blocks.length; i++) {
+            maxLayers = i + 1;
+            maxBlocks = this.blocks[i] != null && this.blocks[i].length > maxBlocks ? this.blocks[i].length : maxBlocks;
+        }
+        if(maxLayers != height || maxBlocks != width * depth)
+            throw new IllegalArgumentException(String.format("Incorrect boundings for MultiBlockStructure: [%d, %d, %d]", this.height, this.width, this.depth));
+
     }
 
     public boolean isValidStructure(World world, int x, int y, int z) {
@@ -31,64 +51,64 @@ public class MultiBlockStructure {
     }
 
     private boolean checkValidationNorth(World world, int mainX, int mainY, int mainZ) {
-        int startY = mainY - mainBlockPos[0];
-        int startX = mainX - mainBlockPos[1] % 3;
-        int startZ = mainZ - mainBlockPos[1] / 3;
+        int startY = mainY - mainLayerPos;
+        int startX = mainX - mainBlockPos % width;
+        int startZ = mainZ - mainBlockPos / depth;
 
-        for(int i = 0; i < 3; i++)
-            for(int j = 0; j < 3; j++)
-                for(int k = 0; k < 3; k++) {
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < width; j++)
+                for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
-                    if(blocks[i][j + k * 3] == null) continue;
-                    if(blocks[i][j + k * 3] == world.getBlock(startX + j, startY + i, startZ + k)) continue;
+                    if(blocks[i][j + k * width] == null) continue;
+                    if(blocks[i][j + k * width] == world.getBlock(startX + j, startY + i, startZ + k)) continue;
                     return false;
                 }
         return true;
     }
 
     private boolean checkValidationEast(World world, int mainX, int mainY, int mainZ) {
-        int startY = mainY - mainBlockPos[0];
-        int startX = mainX + mainBlockPos[1] / 3;
-        int startZ = mainZ - mainBlockPos[1] % 3;
+        int startY = mainY - mainLayerPos;
+        int startX = mainX + mainBlockPos / width;
+        int startZ = mainZ - mainBlockPos % depth;
 
-        for(int i = 0; i < 3; i++)
-            for(int j = 0; j < 3; j++)
-                for(int k = 0; k < 3; k++) {
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < depth; j++)
+                for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
-                    if(blocks[i][j * 3 + k] == null) continue;
-                    if(blocks[i][j * 3 + k] == world.getBlock(startX - j, startY + i, startZ + k)) continue;
+                    if(blocks[i][j * width + k] == null) continue;
+                    if(blocks[i][j * width + k] == world.getBlock(startX - j, startY + i, startZ + k)) continue;
                     return false;
                 }
         return true;
     }
 
     private boolean checkValidationSouth(World world, int mainX, int mainY, int mainZ) {
-        int startY = mainY - mainBlockPos[0];
-        int startX = mainX + mainBlockPos[1] % 3;
-        int startZ = mainZ + mainBlockPos[1] / 3;
+        int startY = mainY - mainLayerPos;
+        int startX = mainX + mainBlockPos % width;
+        int startZ = mainZ + mainBlockPos / depth;
 
-        for(int i = 0; i < 3; i++)
-            for(int j = 0; j < 3; j++)
-                for(int k = 0; k < 3; k++) {
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < width; j++)
+                for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
-                    if(blocks[i][j + k * 3] == null) continue;
-                    if(blocks[i][j + k * 3] == world.getBlock(startX - j, startY + i, startZ - k)) continue;
+                    if(blocks[i][j + k * width] == null) continue;
+                    if(blocks[i][j + k * width] == world.getBlock(startX - j, startY + i, startZ - k)) continue;
                     return false;
                 }
         return true;
     }
 
     private boolean checkValidationWest(World world, int mainX, int mainY, int mainZ) {
-        int startY = mainY - mainBlockPos[0];
-        int startX = mainX - mainBlockPos[1] / 3;
-        int startZ = mainZ + mainBlockPos[1] % 3;
+        int startY = mainY - mainLayerPos;
+        int startX = mainX - mainBlockPos / width;
+        int startZ = mainZ + mainBlockPos % depth;
 
-        for(int i = 0; i < 3; i++)
-            for(int j = 0; j < 3; j++)
-                for(int k = 0; k < 3; k++) {
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < depth; j++)
+                for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
-                    if(blocks[i][j * 3 + k] == null) continue;
-                    if(blocks[i][j * 3 + k] == world.getBlock(startX + j, startY + i, startZ - k)) continue;
+                    if(blocks[i][j * width + k] == null) continue;
+                    if(blocks[i][j * width + k] == world.getBlock(startX + j, startY + i, startZ - k)) continue;
                     return false;
                 }
         return true;
