@@ -1,6 +1,10 @@
 package js25.advancedStuff.blocks;
 
+import js25.advancedStuff.ModRegistry;
 import js25.advancedStuff.items.ItemDebugger;
+import js25.advancedStuff.util.MultiBlockStructure;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
@@ -12,6 +16,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     //const
     private static final int UNITS_PER_TICK = 1;
     private static final int TICKS_NEW_SYNC = 5;
+    private static final MultiBlockStructure multiBlock = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
     //pers
     public int powerUnitsStored;
     //temp
@@ -78,6 +83,8 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
             return data;
         } else if(debugMode == ItemDebugger.DebugModes.INJECT) {
             List data = (LinkedList<String>)in;
+
+            data.add(multiBlock.isValidStructure(worldObj, xCoord, yCoord, zCoord) ? "True" : "False");
 
             return data;
         }
