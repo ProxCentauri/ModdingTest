@@ -91,48 +91,64 @@ public class ItemDebugger extends Item {
 	public boolean onItemUseFirst(ItemStack stack, EntityPlayer p, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
         if(world.isRemote || p.isSneaking()) return false;
 
-        int meta = world.getBlockMetadata(x, y, z);
+        if(getSavedMode(stack) == DebugModes.INFO) {
+            int meta = world.getBlockMetadata(x, y, z);
 
+            Log.chatMessage(p, EnumChatFormatting.BLUE + "--- Debugger ---");
+            Log.chatMessage(p, "Name: %s [%s]", world.getBlock(x, y, z).getLocalizedName(), Block.blockRegistry.getNameForObject(world.getBlock(x, y, z)));
+            Log.chatMessage(p, "Metadata: %s", meta);
+            Log.chatMessage(p, "Hardness: %s, Resistance: %s", world.getBlock(x, y, z).getBlockHardness(world, x, y, z), world.getBlock(x, y, z).getExplosionResistance(p, world, x, y, z, p.posX, p.posY, p.posZ));
+            Log.chatMessage(p, world.getTileEntity(x, y, z) != null ? "This Block has a tile entity" : "This Block has no tile entity");
 
-        Log.chatMessage(p, EnumChatFormatting.BLUE + "--- Debugger ---");
-        Log.chatMessage(p, "Name: %s [%s]", world.getBlock(x, y, z).getLocalizedName(), Block.blockRegistry.getNameForObject(world.getBlock(x, y, z)));
-        Log.chatMessage(p, "Metadata: %s", meta);
-        Log.chatMessage(p, "Hardness: %s, Resistance: %s", world.getBlock(x, y, z).getBlockHardness(world, x, y, z), world.getBlock(x, y, z).getExplosionResistance(p, world, x, y, z, p.posX, p.posY, p.posZ));
-        Log.chatMessage(p, world.getTileEntity(x, y, z) != null ? "This Block has a tile entity" : "This Block has no tile entity");
+            if(world.getTileEntity(x, y, z) != null) {
+                Log.chatMessage(p, EnumChatFormatting.GREEN + "- Tile-Data -");
+                TileEntity tile = world.getTileEntity(x, y, z);
 
-        if(world.getTileEntity(x, y, z) != null) {
-            Log.chatMessage(p, EnumChatFormatting.GREEN + "- Tile-Data -");
+                if(tile instanceof IDebuggable && ((IDebuggable)tile).isValid(DebugModes.INFO)) {
+                    List<String> info = new LinkedList<String>();
+                    info = (LinkedList<String>)((IDebuggable)tile).performDebug(DebugModes.INFO, info);
+                    if(info != null && info.size() > 0) {
+                        for(String text : info)
+                            Log.chatMessage(p, text);
+                    } else {
+                        Log.addWarning("%s should provide info for %s but returns an empty object", tile.getClass().getName(), "DebugModes.INFO");
+                    }
+                } else if(tile instanceof IInventory) {
+                    IInventory inv = (IInventory)tile;
+                    Log.chatMessage(p, "Name: %s", inv.getInventoryName());
+                    int filledRelative = 0;
+                    float filledAbsolute = 0;
+                    for(int i = 0; i < inv.getSizeInventory(); i++) {
+                        ItemStack curStack = inv.getStackInSlot(i);
+                        if(curStack != null && curStack.stackSize > 0) {
+                            ++filledRelative;
+                            filledAbsolute += (float)curStack.stackSize / curStack.getMaxStackSize();
+                        }
+                    }
+                    Log.chatMessage(p, "%d of %d slots have at least one item", filledRelative, inv.getSizeInventory());
+                    Log.chatMessage(p, "%s%% filled up, %s%% of the slots have at least one item", Log.castToDigits(1, (filledAbsolute / inv.getSizeInventory()) * 100), Log.castToDigits(1, ((float)filledRelative / inv.getSizeInventory()) * 100));
+                } else {
+                    Log.chatMessage(p, EnumChatFormatting.RED + "[!] Unknown or unsupported tile entity: '" + tile.getClass().getSimpleName() + "'");
+                    Log.addWarning("Unknown tile entity: " + tile.getClass().getName());
+                }
+            }
+            return true;
+        } else if(getSavedMode(stack) == DebugModes.INJECT) {
             TileEntity tile = world.getTileEntity(x, y, z);
 
-            if(tile instanceof IDebuggable) {
+            if(tile != null && tile instanceof IDebuggable && ((IDebuggable)tile).isValid(DebugModes.INJECT)) {
+                Log.chatMessage(p, EnumChatFormatting.BLUE + "--- Debugger ---");
+
                 List<String> info = new LinkedList<String>();
-                info = (LinkedList<String>)((IDebuggable)tile).performDebug(DebugModes.INFO, info);
-                if(info.size() > 0) {
+                info = (LinkedList<String>)((IDebuggable)tile).performDebug(DebugModes.INJECT, info);
+                if(info != null && info.size() > 0)
                     for(String text : info)
                         Log.chatMessage(p, text);
-                } else {
-                    Log.addWarning("%s is an instance of %s but doesn't provide any debug info", tile.getClass().getName(), IDebuggable.class.getSimpleName());
-                }
-            } else if(tile instanceof IInventory) {
-                IInventory inv = (IInventory)tile;
-                Log.chatMessage(p, "Name: %s", inv.getInventoryName());
-                int filledRelative = 0;
-                float filledAbsolute = 0;
-                for(int i = 0; i < inv.getSizeInventory(); i++) {
-                    ItemStack curStack = inv.getStackInSlot(i);
-                    if(curStack != null && curStack.stackSize > 0) {
-                        ++filledRelative;
-                        filledAbsolute += (float)curStack.stackSize / curStack.getMaxStackSize();
-                    }
-                }
-                Log.chatMessage(p, "%d of %d slots have at least one item", filledRelative, inv.getSizeInventory());
-                Log.chatMessage(p, "%s%% filled up, %s%% of the slots have at least one item", Log.castToDigits(1, (filledAbsolute / inv.getSizeInventory()) * 100), Log.castToDigits(1, ((float)filledRelative / inv.getSizeInventory()) * 100));
-            } else {
-                Log.chatMessage(p, EnumChatFormatting.RED + "[!] Unknown or unsupported tile entity: '" + tile.getClass().getSimpleName() + "'");
-                Log.addWarning("Unknown tile entity: " + tile.getClass().getName());
+
+                return true;
             }
         }
-        return true;
+        return false;
 	}
 
     @Override

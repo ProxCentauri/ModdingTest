@@ -65,6 +65,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     @Override
     public boolean isValid(ItemDebugger.DebugModes debugMode) {
         if(debugMode == ItemDebugger.DebugModes.INFO) return true;
+        if(debugMode == ItemDebugger.DebugModes.INJECT) return true;
 
         return false;
     }
@@ -74,6 +75,10 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
         if(debugMode == ItemDebugger.DebugModes.INFO) {
             List data = (LinkedList<String>)in;
             data.add(String.format("Power: %d, machine is %s", powerUnitsStored, isRunning ? "active" : "inactive"));
+            return data;
+        } else if(debugMode == ItemDebugger.DebugModes.INJECT) {
+            List data = (LinkedList<String>)in;
+
             return data;
         }
 
