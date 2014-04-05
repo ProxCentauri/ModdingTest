@@ -44,6 +44,8 @@ public class BlockBuilder extends BlockContainer {
 
     @Override
     public IIcon getIcon(IBlockAccess access, int x, int y, int z, int side) {
+        if(!((TileEntityBuilder)access.getTileEntity(x, y, z)).isValidStructure)
+            return ForgeDirection.getOrientation(side) == ForgeDirection.UP ? textureTop : null;
         return ForgeDirection.getOrientation(side) == ForgeDirection.UP ? textureTop : textureBlank;
     }
 

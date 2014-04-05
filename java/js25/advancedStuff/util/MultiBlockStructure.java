@@ -1,7 +1,12 @@
 package js25.advancedStuff.util;
 
+import js25.advancedStuff.blocks.BlockCamouflage;
+import js25.advancedStuff.blocks.TileEntityCamouflage;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class MultiBlockStructure {
 
@@ -43,14 +48,25 @@ public class MultiBlockStructure {
     public boolean isValidStructure(World world, int x, int y, int z) {
         if(world.getBlock(x, y, z) != mainBlock) return false;
 
-        if(checkValidationNorth(world, x, y, z)) return true;
-        if(checkValidationEast(world, x, y, z)) return true;
-        if(checkValidationSouth(world, x, y, z)) return true;
-        if(checkValidationWest(world, x, y, z)) return true;
+        if(checkValidationNorth(world, x, y, z, null)) return true;
+        if(checkValidationEast(world, x, y, z, null)) return true;
+        if(checkValidationSouth(world, x, y, z, null)) return true;
+        if(checkValidationWest(world, x, y, z, null)) return true;
         return false;
     }
 
-    private boolean checkValidationNorth(World world, int mainX, int mainY, int mainZ) {
+    public List<Integer> getValidStructureBlocks(World world, int x, int y, int z) {
+        if(world.getBlock(x, y, z) != mainBlock) return null;
+        List<Integer> structureBlocks = new LinkedList<Integer>();
+
+        if(checkValidationNorth(world, x, y, z, structureBlocks)) return structureBlocks;
+        if(checkValidationEast(world, x, y, z, structureBlocks)) return structureBlocks;
+        if(checkValidationSouth(world, x, y, z, structureBlocks)) return structureBlocks;
+        if(checkValidationWest(world, x, y, z, structureBlocks)) return structureBlocks;
+        return null;
+    }
+
+    private boolean checkValidationNorth(World world, int mainX, int mainY, int mainZ, List<Integer> structureBlocks) {
         int startY = mainY - mainLayerPos;
         int startX = mainX - mainBlockPos % width;
         int startZ = mainZ - mainBlockPos / depth;
@@ -60,13 +76,29 @@ public class MultiBlockStructure {
                 for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j + k * width] == null) continue;
-                    if(blocks[i][j + k * width] == world.getBlock(startX + j, startY + i, startZ + k)) continue;
+                    if(blocks[i][j + k * width] == world.getBlock(startX + j, startY + i, startZ + k)) {
+                        if(structureBlocks != null) {
+                            structureBlocks.add(startX + j);
+                            structureBlocks.add(startY + i);
+                            structureBlocks.add(startZ + k);
+                        }
+                        continue;
+                    }
+                    if(world.getBlock(startX + j, startY + i, startZ + k) instanceof BlockCamouflage)
+                        if(blocks[i][j + k * width] == ((TileEntityCamouflage)world.getTileEntity(startX + j, startY + i, startZ + k)).cover) {
+                            if(structureBlocks != null) {
+                                structureBlocks.add(startX + j);
+                                structureBlocks.add(startY + i);
+                                structureBlocks.add(startZ + k);
+                            }
+                            continue;
+                        }
                     return false;
                 }
         return true;
     }
 
-    private boolean checkValidationEast(World world, int mainX, int mainY, int mainZ) {
+    private boolean checkValidationEast(World world, int mainX, int mainY, int mainZ, List<Integer> structureBlocks) {
         int startY = mainY - mainLayerPos;
         int startX = mainX + mainBlockPos / width;
         int startZ = mainZ - mainBlockPos % depth;
@@ -76,13 +108,29 @@ public class MultiBlockStructure {
                 for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j * width + k] == null) continue;
-                    if(blocks[i][j * width + k] == world.getBlock(startX - j, startY + i, startZ + k)) continue;
+                    if(blocks[i][j * width + k] == world.getBlock(startX - j, startY + i, startZ + k)) {
+                        if(structureBlocks != null) {
+                            structureBlocks.add(startX - j);
+                            structureBlocks.add(startY + i);
+                            structureBlocks.add(startZ + k);
+                        }
+                        continue;
+                    }
+                    if(world.getBlock(startX - j, startY + i, startZ + k) instanceof BlockCamouflage)
+                        if(blocks[i][j * width + k] == ((TileEntityCamouflage)world.getTileEntity(startX - j, startY + i, startZ + k)).cover) {
+                            if(structureBlocks != null) {
+                                structureBlocks.add(startX - j);
+                                structureBlocks.add(startY + i);
+                                structureBlocks.add(startZ + k);
+                            }
+                            continue;
+                        }
                     return false;
                 }
         return true;
     }
 
-    private boolean checkValidationSouth(World world, int mainX, int mainY, int mainZ) {
+    private boolean checkValidationSouth(World world, int mainX, int mainY, int mainZ, List<Integer> structureBlocks) {
         int startY = mainY - mainLayerPos;
         int startX = mainX + mainBlockPos % width;
         int startZ = mainZ + mainBlockPos / depth;
@@ -92,13 +140,29 @@ public class MultiBlockStructure {
                 for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j + k * width] == null) continue;
-                    if(blocks[i][j + k * width] == world.getBlock(startX - j, startY + i, startZ - k)) continue;
+                    if(blocks[i][j + k * width] == world.getBlock(startX - j, startY + i, startZ - k)) {
+                        if(structureBlocks != null) {
+                            structureBlocks.add(startX - j);
+                            structureBlocks.add(startY + i);
+                            structureBlocks.add(startZ - k);
+                        }
+                        continue;
+                    }
+                    if(world.getBlock(startX - j, startY + i, startZ - k) instanceof BlockCamouflage)
+                        if(blocks[i][j + k * width] == ((TileEntityCamouflage)world.getTileEntity(startX - j, startY + i, startZ - k)).cover) {
+                            if(structureBlocks != null) {
+                                structureBlocks.add(startX - j);
+                                structureBlocks.add(startY + i);
+                                structureBlocks.add(startZ - k);
+                            }
+                            continue;
+                        }
                     return false;
                 }
         return true;
     }
 
-    private boolean checkValidationWest(World world, int mainX, int mainY, int mainZ) {
+    private boolean checkValidationWest(World world, int mainX, int mainY, int mainZ, List<Integer> structureBlocks) {
         int startY = mainY - mainLayerPos;
         int startX = mainX - mainBlockPos / width;
         int startZ = mainZ + mainBlockPos % depth;
@@ -108,7 +172,23 @@ public class MultiBlockStructure {
                 for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j * width + k] == null) continue;
-                    if(blocks[i][j * width + k] == world.getBlock(startX + j, startY + i, startZ - k)) continue;
+                    if(blocks[i][j * width + k] == world.getBlock(startX + j, startY + i, startZ - k)) {
+                        if(structureBlocks != null) {
+                            structureBlocks.add(startX + j);
+                            structureBlocks.add(startY + i);
+                            structureBlocks.add(startZ - k);
+                        }
+                        continue;
+                    }
+                    if(world.getBlock(startX + j, startY + i, startZ - k) instanceof BlockCamouflage)
+                        if(blocks[i][j * width + k] == ((TileEntityCamouflage)world.getTileEntity(startX + j, startY + i, startZ - k)).cover) {
+                            if(structureBlocks != null) {
+                                structureBlocks.add(startX + j);
+                                structureBlocks.add(startY + i);
+                                structureBlocks.add(startZ - k);
+                            }
+                            continue;
+                        }
                     return false;
                 }
         return true;
