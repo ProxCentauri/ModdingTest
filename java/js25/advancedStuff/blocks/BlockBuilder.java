@@ -3,7 +3,6 @@ package js25.advancedStuff.blocks;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import js25.advancedStuff.lib.Textures;
-import js25.advancedStuff.util.ModCreativeTab;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -17,8 +16,6 @@ public class BlockBuilder extends BlockContainer {
 
     public BlockBuilder(Material material) {
         super(material);
-        setCreativeTab(ModCreativeTab.tabCombat);
-        setHardness(1.0F);
     }
 
     @Override
