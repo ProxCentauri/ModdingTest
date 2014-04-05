@@ -16,6 +16,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     //const
     private static final int UNITS_PER_TICK = 1;
     private static final int TICKS_NEW_SYNC = 5;
+    private static final int TICKS_NEW_MBS_UPDATE = 5;
     private static final MultiBlockStructure BASIC_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 3, 3, 3, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
     private static final MultiBlockStructure BOILER_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 4, 3, 3, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}});
     private static final MultiBlockStructure FURNACE_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 2, 3, 2, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.netherrack, Blocks.iron_block}, new Block[] {Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block}});
@@ -23,25 +24,37 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     public int powerUnitsStored;
     //temp
     public boolean isRunning;
+    public boolean isValidStructure;
     private int nextSync;
+    private int nextMBSUpdate;
 
     public TileEntityBuilder() {
         this.powerUnitsStored = 0;
+        this.isValidStructure = false;
         this.isRunning = false;
         this.nextSync = 2;
+        this.nextMBSUpdate = 2;
 
     }
 
     @Override
     public void updateEntity() {
-        if(!worldObj.isRemote) {
-            if(nextSync == 0) {
-                syncClient();
-                nextSync = TICKS_NEW_SYNC;
-            } else {
-                --nextSync;
-            }
+        if(!worldObj.isRemote && --nextSync <= 0) {
+            syncClient();
+            nextSync = TICKS_NEW_SYNC;
         }
+        if(--nextMBSUpdate <= 0) {
+            boolean valid = BOILER_MULTI_BLOCK.isValidStructure(worldObj, xCoord, yCoord, zCoord);
+            if(valid && !isValidStructure) {
+                createdMultiBlockStructure();
+                isValidStructure = true;
+            } else if(!valid && isValidStructure) {
+                destroyedMultiBlockStructure();
+                isValidStructure = false;
+            }
+            nextMBSUpdate = TICKS_NEW_MBS_UPDATE;
+        }
+
 
         if(isRunning) {
             if(powerUnitsStored - UNITS_PER_TICK < 0) {
@@ -52,6 +65,22 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
             }
         }
 
+
+    }
+
+    private void createdMultiBlockStructure() {
+        /*
+        if(worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1) != null) {
+            worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1).cameraYaw += 100;
+            worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1).motionY += 0.5;
+        }
+        */
+
+        
+
+    }
+
+    private void destroyedMultiBlockStructure() {
 
     }
 
@@ -82,11 +111,14 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
         if(debugMode == ItemDebugger.DebugModes.INFO) {
             List data = (LinkedList<String>)in;
             data.add(String.format("Power: %d, machine is %s", powerUnitsStored, isRunning ? "active" : "inactive"));
+            data.add(isValidStructure ? "Inside a valid structure" : "No valid structure found");
             return data;
         } else if(debugMode == ItemDebugger.DebugModes.INJECT) {
             List data = (LinkedList<String>)in;
 
-            data.add(BOILER_MULTI_BLOCK.isValidStructure(worldObj, xCoord, yCoord, zCoord) ? "True" : "False");
+            nextSync = 0;
+            nextMBSUpdate = 0;
+            data.add("Forced update and sync");
 
             return data;
         }
