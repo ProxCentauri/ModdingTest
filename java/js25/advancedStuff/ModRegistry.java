@@ -1,10 +1,7 @@
 package js25.advancedStuff;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import js25.advancedStuff.blocks.BlockBuilder;
-import js25.advancedStuff.blocks.BlockMagnet;
-import js25.advancedStuff.blocks.TileEntityBuilder;
-import js25.advancedStuff.blocks.TileEntityMagnet;
+import js25.advancedStuff.blocks.*;
 import js25.advancedStuff.items.ItemDebugger;
 import js25.advancedStuff.util.ModCreativeTab;
 import net.minecraft.block.Block;
@@ -20,7 +17,8 @@ public class ModRegistry {
 
     public static enum Blocks {
         BUILDER(new BlockBuilder(Material.iron), "builder", 5.0F, 10.0F, Block.soundTypeMetal),
-        MAGNET(new BlockMagnet(Material.iron), "magnet", 5.0F, 10.0F, Block.soundTypeMetal);
+        MAGNET(new BlockMagnet(Material.iron), "magnet", 5.0F, 10.0F, Block.soundTypeMetal),
+        CAMOUFLAGE(new BlockCamouflage(Material.iron), "camouflage", 5.0F, 10.0F, Block.soundTypeMetal);
 
         public Block instance;
         public String uniqueName, unlocalizedName;
@@ -59,7 +57,8 @@ public class ModRegistry {
 
     public static enum TileEntities {
         MAGNET(TileEntityMagnet.class, "tileEntityMagnet"),
-        BUILDER(TileEntityBuilder.class, "tileEntityBuilder");
+        BUILDER(TileEntityBuilder.class, "tileEntityBuilder"),
+        CAMOUFLAGE(TileEntityCamouflage.class, "tileEntityCamouflage");
 
         public Class<? extends TileEntity> tileClass;
         public String identifier;
