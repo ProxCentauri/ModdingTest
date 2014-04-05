@@ -2,11 +2,13 @@ package js25.advancedStuff.blocks;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import js25.advancedStuff.lib.Textures;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.particle.EntityDiggingFX;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -28,14 +30,31 @@ public class BlockCamouflage extends BlockContainer {
         return new TileEntityCamouflage();
     }
 
+    @SideOnly(Side.CLIENT)
+    private IIcon connectedIron;
+
+    @Override
+    public void registerBlockIcons(IIconRegister reg) {
+        connectedIron = reg.registerIcon(Textures.BLOCK_CAMOUFLAGE_CONNECTED_IRON);
+    }
+
     @Override
     public IIcon getIcon(IBlockAccess access, int x, int y, int z, int side) {
-        if(((TileEntityCamouflage)access.getTileEntity(x, y, z)).cover instanceof BlockCamouflage) return null;
-        return ((TileEntityCamouflage)access.getTileEntity(x, y, z)).cover.getIcon(side, access.getBlockMetadata(x, y, z));
+        TileEntityCamouflage tile = (TileEntityCamouflage)access.getTileEntity(x, y, z);
+        if(tile.cover instanceof BlockCamouflage || tile.cover == null) {
+            //Log.add(Boolean.toString(tile.cover instanceof BlockCamouflage) + ", " + Boolean.toString(tile.cover == null) + ", " + x + ", " + y + ", " + z);
+            return null;
+        }
+
+        if(tile.owner != null && tile.owner.isValidStructure)
+            return connectedIron;
+
+        return tile.cover.getIcon(side, access.getBlockMetadata(x, y, z));
     }
 
     @Override
     public Item getItem(World world, int x, int y, int z) {
+        if(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover == null) return Item.getItemFromBlock(this);
         return Item.getItemFromBlock(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover);
     }
 
@@ -47,14 +66,14 @@ public class BlockCamouflage extends BlockContainer {
     @Override
     public float getBlockHardness(World world, int x, int y, int z) {
         if(world.getTileEntity(x, y, z) == null) return 1F;
-        if(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover instanceof BlockCamouflage) return 1F;
+        if(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover instanceof BlockCamouflage || ((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover == null) return 1F;
         return ((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover.getBlockHardness(world, x, y, z);
     }
 
     @Override
     public float getExplosionResistance(Entity entity, World world, int x, int y, int z, double explosionX, double explosionY, double explosionZ) {
         if(world.getTileEntity(x, y, z) == null) return 1F;
-        if(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover instanceof BlockCamouflage) return 1F;
+        if(((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover instanceof BlockCamouflage || ((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover == null) return 1F;
         return ((TileEntityCamouflage)world.getTileEntity(x, y, z)).cover.getExplosionResistance(entity, world, x, y, z, explosionX, explosionY, explosionZ);
     }
 

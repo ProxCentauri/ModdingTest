@@ -17,6 +17,8 @@ public class Textures {
     public static final String BLOCK_BUILDER_TOP = LOCATION + "builder_top";
     public static final String BLOCK_BUILDER_ACTIVE = LOCATION + "builder_active";
 
+    public static final String BLOCK_CAMOUFLAGE_CONNECTED_IRON = LOCATION + "camouflage_connected_iron";
+
 	//items
 	public static final String ITEM_DEBUGGER = LOCATION + "debugger";
 	

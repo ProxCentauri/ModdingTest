@@ -75,18 +75,31 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
             worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1).motionY += 0.5;
         }
         */
+        List blocks = BOILER_MULTI_BLOCK.getValidStructureBlocks(worldObj, xCoord, yCoord, zCoord);
+        for(int i = 0; i < blocks.size(); i += 3) {
+            int x = (Integer)blocks.get(i);
+            int y = (Integer)blocks.get(i + 1);
+            int z = (Integer)blocks.get(i + 2);
+            Block b = worldObj.getBlock(x, y, z);
+            if(b != null && b != Blocks.air && b != ModRegistry.Blocks.CAMOUFLAGE.instance && b !=  ModRegistry.Blocks.BUILDER.instance) {
+                worldObj.setBlock(x, y, z, ModRegistry.Blocks.CAMOUFLAGE.instance, worldObj.getBlockMetadata(x, y, z), 6);
+                ((TileEntityCamouflage)worldObj.getTileEntity(x, y, z)).cover = b;
+                ((TileEntityCamouflage)worldObj.getTileEntity(x, y, z)).owner = this;
+            }
 
-        
+            worldObj.markBlockForUpdate(x, y, z);
+        }
 
+        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
     }
 
     private void destroyedMultiBlockStructure() {
-
+        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
     }
 
     @Override
     public void syncClient() {
-        worldObj.addBlockEvent(xCoord, yCoord, zCoord, worldObj.getBlock(xCoord, yCoord, zCoord), 0, powerUnitsStored);
+        worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 0, powerUnitsStored);
     }
 
     @Override
