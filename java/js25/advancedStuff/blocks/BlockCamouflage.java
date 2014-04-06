@@ -42,7 +42,6 @@ public class BlockCamouflage extends BlockContainer {
     public IIcon getIcon(IBlockAccess access, int x, int y, int z, int side) {
         TileEntityCamouflage tile = (TileEntityCamouflage)access.getTileEntity(x, y, z);
         if(tile.cover instanceof BlockCamouflage || tile.cover == null) {
-            //Log.add(Boolean.toString(tile.cover instanceof BlockCamouflage) + ", " + Boolean.toString(tile.cover == null) + ", " + x + ", " + y + ", " + z);
             return null;
         }
 

@@ -17,9 +17,9 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
     private static final int UNITS_PER_TICK = 1;
     private static final int TICKS_NEW_SYNC = 5;
     private static final int TICKS_NEW_MBS_UPDATE = 5;
-    private static final MultiBlockStructure BASIC_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 3, 3, 3, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
-    private static final MultiBlockStructure BOILER_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 4, 3, 3, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}});
-    private static final MultiBlockStructure FURNACE_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, 2, 3, 2, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.netherrack, Blocks.iron_block}, new Block[] {Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block}});
+    private static final MultiBlockStructure BASIC_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, false, 3, 3, 3, new Block[][] {null, new Block[] {null, null, null, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, null, ModRegistry.Blocks.BUILDER.instance, null}, null});
+    private static final MultiBlockStructure BOILER_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, true, 4, 3, 3, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}, new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block}});
+    private static final MultiBlockStructure FURNACE_MULTI_BLOCK = new MultiBlockStructure(ModRegistry.Blocks.BUILDER.instance, false, 2, 3, 2, new Block[][] {new Block[] {Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.iron_block, Blocks.netherrack, Blocks.iron_block}, new Block[] {Blocks.iron_block, ModRegistry.Blocks.BUILDER.instance, Blocks.iron_block, Blocks.iron_block, Blocks.air, Blocks.iron_block}});
     //pers
     public int powerUnitsStored;
     //temp
@@ -39,10 +39,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
 
     @Override
     public void updateEntity() {
-        if(!worldObj.isRemote && --nextSync <= 0) {
-            syncClient();
-            nextSync = TICKS_NEW_SYNC;
-        }
+
         if(--nextMBSUpdate <= 0) {
             boolean valid = BOILER_MULTI_BLOCK.isValidStructure(worldObj, xCoord, yCoord, zCoord);
             if(valid && !isValidStructure) {
@@ -55,8 +52,7 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
             nextMBSUpdate = TICKS_NEW_MBS_UPDATE;
         }
 
-
-        if(isRunning) {
+        if(isRunning) { //pseudo
             if(powerUnitsStored - UNITS_PER_TICK < 0) {
                 isRunning = false;
             } else {
@@ -65,36 +61,46 @@ public class TileEntityBuilder extends TileEntity implements IServerClientSync, 
             }
         }
 
+        //sync
+        if(!worldObj.isRemote && --nextSync <= 0) {
+            syncClient();
+            nextSync = TICKS_NEW_SYNC;
+        }
 
     }
 
+    public void updateMultiBlockStructure() {
+        if(BOILER_MULTI_BLOCK.isValidStructure(worldObj, xCoord, yCoord, zCoord))
+            createdMultiBlockStructure();
+    }
+
     private void createdMultiBlockStructure() {
-        /*
-        if(worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1) != null) {
-            worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1).cameraYaw += 100;
-            worldObj.getClosestPlayer(xCoord, yCoord, zCoord, -1).motionY += 0.5;
-        }
-        */
         List blocks = BOILER_MULTI_BLOCK.getValidStructureBlocks(worldObj, xCoord, yCoord, zCoord);
         for(int i = 0; i < blocks.size(); i += 3) {
             int x = (Integer)blocks.get(i);
             int y = (Integer)blocks.get(i + 1);
             int z = (Integer)blocks.get(i + 2);
             Block b = worldObj.getBlock(x, y, z);
-            if(b != null && b != Blocks.air && b != ModRegistry.Blocks.CAMOUFLAGE.instance && b !=  ModRegistry.Blocks.BUILDER.instance) {
+            if(b != null && b != Blocks.air && !(b instanceof BlockBuilder)) {
                 worldObj.setBlock(x, y, z, ModRegistry.Blocks.CAMOUFLAGE.instance, worldObj.getBlockMetadata(x, y, z), 6);
-                ((TileEntityCamouflage)worldObj.getTileEntity(x, y, z)).cover = b;
+                ((TileEntityCamouflage)worldObj.getTileEntity(x, y, z)).cover = (b instanceof BlockCamouflage ? ((TileEntityCamouflage) worldObj.getTileEntity(x, y, z)).cover : b);
                 ((TileEntityCamouflage)worldObj.getTileEntity(x, y, z)).owner = this;
             }
 
             worldObj.markBlockForUpdate(x, y, z);
         }
-
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
     }
 
     private void destroyedMultiBlockStructure() {
         worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+
+        for(int i = 0; i < worldObj.loadedTileEntityList.size(); i++) {
+            TileEntity tile = (TileEntity)worldObj.loadedTileEntityList.get(i);
+            if(tile instanceof TileEntityBuilder) {
+                if(getDistanceFrom(tile.xCoord, tile.yCoord, tile.zCoord) <= 256)
+                    ((TileEntityBuilder)tile).updateMultiBlockStructure();
+            }
+        }
     }
 
     @Override
