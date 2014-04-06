@@ -11,11 +11,16 @@ import java.util.List;
 
 public class TileEntityCamouflage extends TileEntity implements IDebuggable, IServerClientSync {
 
-    private int nextSync;
+    //const
     private static final int TICKS_NEW_SYNC = 5;
+    private static final int TICKS_NEW_OWNER_CHECK = 5;
+    //pers
     public Block cover;
     public TileEntityBuilder owner; //TODO: Interface for MBS owners
-    private Integer ownerX, ownerY, ownerZ;
+    //temp
+    private int nextSync;
+    private int nextOwnerCheck;
+    private Integer savedOwnerX, savedOwnerY, savedOwnerZ;
 
     public TileEntityCamouflage() {
         this.cover = ModRegistry.Blocks.CAMOUFLAGE.instance;
@@ -23,21 +28,48 @@ public class TileEntityCamouflage extends TileEntity implements IDebuggable, ISe
 
     @Override
     public void updateEntity() {
+
+        if(owner == null && savedOwnerX != null && savedOwnerY != null && savedOwnerZ != null) {
+            if(worldObj.getBlock(savedOwnerX, savedOwnerY, savedOwnerZ).hasTileEntity(0)) {
+                TileEntity tile = worldObj.getTileEntity(savedOwnerX, savedOwnerY, savedOwnerZ);
+                if(tile instanceof TileEntityBuilder) {
+                    owner = (TileEntityBuilder)tile;
+                    worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                } else {
+                    savedOwnerX = null;
+                    savedOwnerY = null;
+                    savedOwnerZ = null;
+                }
+            } else {
+                savedOwnerX = null;
+                savedOwnerY = null;
+                savedOwnerZ = null;
+            }
+        }
+
+        if(--nextOwnerCheck <= 0) {
+            if(owner != null) {
+                if(worldObj.getBlock(owner.xCoord, owner.yCoord, owner.zCoord).hasTileEntity(0)) {
+                    TileEntity tile = worldObj.getTileEntity(owner.xCoord, owner.yCoord, owner.zCoord);
+                    if(!(tile instanceof TileEntityBuilder)) {
+                        owner = null;
+                        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                    }
+                } else {
+                    owner = null;
+                    worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                }
+            }
+            nextOwnerCheck = TICKS_NEW_OWNER_CHECK;
+        }
+
+        //sync
         if(--nextSync <= 0) {
             if(!worldObj.isRemote) syncClient();
-            if(worldObj.isRemote) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+            //if(worldObj.isRemote) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             nextSync = TICKS_NEW_SYNC;
         }
 
-        if(owner == null && ownerX != null && ownerY != null && ownerZ != null) {
-            owner = (TileEntityBuilder)worldObj.getTileEntity(ownerX, ownerY, ownerZ);
-        }
-
-        if(owner != null && (ownerX == null || ownerY == null || ownerZ == null)) {
-            ownerX = owner.xCoord;
-            ownerY = owner.yCoord;
-            ownerZ = owner.zCoord;
-        }
     }
 
     @Override
@@ -65,10 +97,10 @@ public class TileEntityCamouflage extends TileEntity implements IDebuggable, ISe
     @Override
     public void syncClient() {
         worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 0, Block.blockRegistry.getIDForObject(cover));
-        if(ownerX != null && ownerY != null && ownerZ != null) {
-            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 1, ownerX);
-            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 2, ownerY);
-            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 3, ownerZ);
+        if(owner != null) {
+            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 1, owner.xCoord);
+            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 2, owner.yCoord);
+            worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 3, owner.zCoord);
         }
     }
 
@@ -79,9 +111,9 @@ public class TileEntityCamouflage extends TileEntity implements IDebuggable, ISe
                 if(cover != Block.getBlockById(value))
                     worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
                 cover = Block.getBlockById(value); break;
-            case 1: ownerX = value; break;
-            case 2: ownerY = value; break;
-            case 3: ownerZ = value; break;
+            case 1: savedOwnerX = value; break;
+            case 2: savedOwnerY = value; break;
+            case 3: savedOwnerZ = value; break;
             default: return false;
         }
         return true;
@@ -94,9 +126,9 @@ public class TileEntityCamouflage extends TileEntity implements IDebuggable, ISe
         if(cover == null) cover = getBlockType();
         try {
             NBTTagCompound ownerCompound = compound.getCompoundTag("Owner");
-            ownerX = ownerCompound.getInteger("x");
-            ownerY = ownerCompound.getInteger("y");
-            ownerZ = ownerCompound.getInteger("z");
+            savedOwnerX = ownerCompound.getInteger("x");
+            savedOwnerY = ownerCompound.getInteger("y");
+            savedOwnerZ = ownerCompound.getInteger("z");
         } catch(Exception ex) {
             ex.printStackTrace();
         }
