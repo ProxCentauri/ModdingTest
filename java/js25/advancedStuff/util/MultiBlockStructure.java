@@ -11,15 +11,18 @@ import java.util.List;
 public class MultiBlockStructure {
 
     private Block mainBlock;
-    int height, width, depth, mainLayerPos, mainBlockPos;
+    private boolean mainWildcard;
+    private int height, width, depth, mainLayerPos, mainBlockPos;
     private Block[][] blocks;
-    private int[][] meta;
+    private int[][] meta; //TODO add meta support
 
     /**
+     * @param mainWildcard Whether the main block can be used as a replacement for any other block in the structure
      * @param blocks The blocks required for a valid structure. Format: Block[Layer][Blocks]; <code>null</code> ignores placed blocks
      */
-    public MultiBlockStructure(Block mainBlock, int height, int width, int depth, Block[][] blocks) {
+    public MultiBlockStructure(Block mainBlock, boolean mainWildcard, int height, int width, int depth, Block[][] blocks) {
         this.mainBlock = mainBlock;
+        this.mainWildcard = mainWildcard;
         this.height = height;
         this.width = width;
         this.depth = depth;
@@ -76,7 +79,8 @@ public class MultiBlockStructure {
                 for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j + k * width] == null) continue;
-                    if(blocks[i][j + k * width] == world.getBlock(startX + j, startY + i, startZ + k)) {
+                    Block b = world.getBlock(startX + j, startY + i, startZ + k);
+                    if(blocks[i][j + k * width] == b || (mainWildcard && b == mainBlock)) {
                         if(structureBlocks != null) {
                             structureBlocks.add(startX + j);
                             structureBlocks.add(startY + i);
@@ -84,7 +88,7 @@ public class MultiBlockStructure {
                         }
                         continue;
                     }
-                    if(world.getBlock(startX + j, startY + i, startZ + k) instanceof BlockCamouflage)
+                    if(b instanceof BlockCamouflage)
                         if(blocks[i][j + k * width] == ((TileEntityCamouflage)world.getTileEntity(startX + j, startY + i, startZ + k)).cover) {
                             if(structureBlocks != null) {
                                 structureBlocks.add(startX + j);
@@ -108,7 +112,8 @@ public class MultiBlockStructure {
                 for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j * width + k] == null) continue;
-                    if(blocks[i][j * width + k] == world.getBlock(startX - j, startY + i, startZ + k)) {
+                    Block b = world.getBlock(startX - j, startY + i, startZ + k);
+                    if(blocks[i][j * width + k] == b || (mainWildcard && b == mainBlock)) {
                         if(structureBlocks != null) {
                             structureBlocks.add(startX - j);
                             structureBlocks.add(startY + i);
@@ -116,7 +121,7 @@ public class MultiBlockStructure {
                         }
                         continue;
                     }
-                    if(world.getBlock(startX - j, startY + i, startZ + k) instanceof BlockCamouflage)
+                    if(b instanceof BlockCamouflage)
                         if(blocks[i][j * width + k] == ((TileEntityCamouflage)world.getTileEntity(startX - j, startY + i, startZ + k)).cover) {
                             if(structureBlocks != null) {
                                 structureBlocks.add(startX - j);
@@ -140,7 +145,8 @@ public class MultiBlockStructure {
                 for(int k = 0; k < depth; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j + k * width] == null) continue;
-                    if(blocks[i][j + k * width] == world.getBlock(startX - j, startY + i, startZ - k)) {
+                    Block b = world.getBlock(startX - j, startY + i, startZ - k);
+                    if(blocks[i][j + k * width] == b || (mainWildcard && b == mainBlock)) {
                         if(structureBlocks != null) {
                             structureBlocks.add(startX - j);
                             structureBlocks.add(startY + i);
@@ -148,7 +154,7 @@ public class MultiBlockStructure {
                         }
                         continue;
                     }
-                    if(world.getBlock(startX - j, startY + i, startZ - k) instanceof BlockCamouflage)
+                    if(b instanceof BlockCamouflage)
                         if(blocks[i][j + k * width] == ((TileEntityCamouflage)world.getTileEntity(startX - j, startY + i, startZ - k)).cover) {
                             if(structureBlocks != null) {
                                 structureBlocks.add(startX - j);
@@ -172,7 +178,8 @@ public class MultiBlockStructure {
                 for(int k = 0; k < width; k++) {
                     if(blocks[i] == null) continue;
                     if(blocks[i][j * width + k] == null) continue;
-                    if(blocks[i][j * width + k] == world.getBlock(startX + j, startY + i, startZ - k)) {
+                    Block b = world.getBlock(startX + j, startY + i, startZ - k);
+                    if(blocks[i][j * width + k] == b || (mainWildcard && b == mainBlock)) {
                         if(structureBlocks != null) {
                             structureBlocks.add(startX + j);
                             structureBlocks.add(startY + i);
@@ -180,7 +187,7 @@ public class MultiBlockStructure {
                         }
                         continue;
                     }
-                    if(world.getBlock(startX + j, startY + i, startZ - k) instanceof BlockCamouflage)
+                    if(b instanceof BlockCamouflage)
                         if(blocks[i][j * width + k] == ((TileEntityCamouflage)world.getTileEntity(startX + j, startY + i, startZ - k)).cover) {
                             if(structureBlocks != null) {
                                 structureBlocks.add(startX + j);
